@@ -3,44 +3,47 @@ on:
   workflow_dispatch:
 
 permissions:
-      id-token: write
-      contents: read
-jobs: 
+  id-token: write
+  contents: read
+
+jobs:
   AKS-Cluster-Deployment:
     runs-on: ubuntu-latest
- 
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3.1.0
-        
+
       - uses: hashicorp/setup-terraform@v3
         with:
-            terraform_version: "1.1.7"
-        
-      - name: 'Az CLI login'
+          terraform_version: "1.1.7"
+
+      - name: Azure CLI login
         uses: azure/login@v1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-  
-      - name: azure cli
-        uses: azure/CLI@v1
-        with:
-           azcliversion: latest
-           inlineScript: |
-             az account show
-  
 
-      - name: Terraform Initiliza
+      - name: Set Azure Cloud
+        run: az cloud set -n AzureCloud
+
+      - name: Show Azure Account
+        run: az account show
+
+      - name: Terraform Initialize
         run: terraform init
-      
+
       - name: Terraform Validate
         run: terraform validate
 
       - name: Terraform Plan
         run: terraform plan
-             
+
+      # Add a conditional step to apply Terraform changes only if the plan is successful
+      - name: Terraform Apply
+        if: success() && github.event_name == 'workflow_dispatch'
+        run: terraform apply -auto-approve
 
       - name: Terraform Output
         run: terraform output

@@ -1,0 +1,52 @@
+
+name: Create Azure AKS 
+on:
+  workflow_dispatch:
+
+
+jobs: 
+  AKS-Cluster-Deployment:
+    env:
+        ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+        ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  
+    runs-on: ubuntu-latest
+    defaults:
+        run:
+         shell: bash
+ 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: 'Terraform Format'
+        uses: hashicorp/terraform-github-actions@master
+        with:
+            tf_actions_version: 1.1.7
+            tf_actions_subcommand: fmt
+            tf_actions_working_dir: "."
+
+      - name: 'Terraform Initiliza'
+        uses: hashicorp/terraform-github-actions@master
+        with:
+           tf_actions_version: 1.1.7
+           tf_actions_subcommand: init
+           tf_actions_working_dir: "."
+
+      - name: 'Terraform Validate'
+        uses: hashicorp/terraform-github-actions@master
+        with:
+           tf_actions_version: 1.1.7
+           tf_actions_subcommand: validate
+           tf_actions_working_dir: "."
+
+      - name: 'Terraform Plan'
+        uses: hashicorp/terraform-github-actions@master
+        with:
+           tf_actions_version: 1.1.7
+           tf_actions_subcommand: plan
+           tf_actions_working_dir: "."
+            
+      
